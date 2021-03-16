@@ -5,6 +5,8 @@
  */
 package logicalclock;
 
+import java.util.concurrent.CountDownLatch;
+
 /**
  *
  * @author Ian Gortan
@@ -12,13 +14,13 @@ package logicalclock;
 public class LamportTest {
     
     public static void main(String[] args) {
+        CountDownLatch latch = new CountDownLatch(1);
+
         System.out.println("starting ....");
         MessageBuffer buffer = new MessageBuffer(10);
-        (new Thread(new LamportClient(buffer, 0))).start();
-        (new Thread(new LamportClient(buffer, 1))).start();
-        (new Thread(new LamportClient(buffer, 2))).start();
-        
-        
+        (new Thread(new LamportClient(buffer, 0, latch))).start();
+        (new Thread(new LamportClient(buffer, 1, latch))).start();
+        (new Thread(new LamportClient(buffer, 2, latch))).start();
      
       }
 }

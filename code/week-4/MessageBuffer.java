@@ -41,7 +41,7 @@ public class MessageBuffer {
             numItems--;
             // Notify producer that buffer is empty
             Message msg = messages [back];
-            // System.out.println("[BUFFER GET] " + "POSITION: " + back + " MESSAGE: " + msg.getPid() + " + " + msg.getClock());
+            // System.out.println("[BUFFER GET] " + "POSITION: " + back + " MESSAGE: PID=" + msg.getPid() + " + CLOCK=" + msg.getClock());
             back = (back + 1) % CAPACITY ;
             notifyAll();
             return msg;
@@ -60,7 +60,7 @@ public class MessageBuffer {
         numItems++;
         // Store message.
         this.messages[front] = new Message(message);        
-        // System.out.println("[BUFFER PUT] " + "POSITION: " + front + " MESSAGE: " + messages[front].getPid() + " + " + messages[front].getClock());
+        // System.out.println("[BUFFER PUT] " + "POSITION: " + front + " MESSAGE:  PID=" + messages[front].getPid() + " + CLOCK=" + messages[front].getClock());
         front = (front + 1 ) % CAPACITY ;
         // Notify consumer that message is available
         notifyAll();
@@ -70,6 +70,7 @@ public class MessageBuffer {
          for (int i=0;i<front;i++) {
             System.out.println("[BUFFER] "  + i + "[" + messages[i].getPid() +"," + messages[i].getClock() + "]") ;
         }
+        System.out.println("--------------------");
     }
 
 }

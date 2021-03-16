@@ -2,6 +2,7 @@ package logicalclock;
 
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.concurrent.CountDownLatch;
 
 /**
  *
@@ -12,11 +13,13 @@ public class LamportClient implements Runnable {
     private MessageBuffer buffer;
     final private int NUM_EVENTS = 10; 
     private int pid;
+    private CountDownLatch latch;
     
 
-    public LamportClient(MessageBuffer buf, int pid) {
+    public LamportClient(MessageBuffer buf, int pid, CountDownLatch latch) {
         this.buffer = buf;
         this.pid = pid;
+        this.latch = latch;
     }
 
     public void run() {
@@ -30,7 +33,7 @@ public class LamportClient implements Runnable {
         m.setPid(pid);
         m.setClock(clock) ;
         
-        // add some 'reandomness' to the order at startup
+        // add some 'randomness' to the order at startup
         if ( (pid%2) == 0 ) {
             clock++;
             m.setClock(clock);
@@ -56,12 +59,13 @@ public class LamportClient implements Runnable {
                 } catch (InterruptedException e) {}
             
                 // get a message and set clock according to Lamport algorithm
-                //System.out.println("Getting a message: " + Integer.toString(pid));
+                // System.out.println("Getting a message: " + Integer.toString(pid));
                 Message recMsg = buffer.get(pid);
-                 // chck it wasn't a message we sent (null returned) as we want to ignore those
+                 // check it wasn't a message we sent (null returned) as we want to ignore those
                  
                 if (recMsg != null) {
                     // add the event ...
+                    // The Lamport Algorithm:
                     if (recMsg.getClock() > clock) {
                         clock = recMsg.getClock() + 1; 
                     } else {
@@ -70,20 +74,23 @@ public class LamportClient implements Runnable {
                     event = "[RECEIVE]  " + "FROM PID="  + Integer.toString(recMsg.getPid()) + " CLOCK IN:" + Integer.toString(recMsg.getClock()) + " LOCAL CLOCK " + Integer.toString(clock); 
                     events.add(event);
                 }
-                
+
+                // buffer.printBufferContents();
                 
             }
            
                 
         }
-        
-        System.out.println("Process " + pid + " complete. Here's my view of the order of events");
-		
-        // TO DO add your code here to output results
-		
-        
-            
-          
+
+        latch.countDown();
+        try {
+            latch.await();
+            System.out.println("Process " + pid + " complete. Here's my view of the order of events");
+            System.out.println("Events: " + events.toString());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
      }
  
 }
